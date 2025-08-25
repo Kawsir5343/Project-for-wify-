@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>For Mommy (Prema) – Private</title>
+<meta name="description" content="A private, lightweight love website for Prema (Mommy)">
+<style>
+  :root{
+    --bg:#0b0b0d; --fg:#ffffff; --muted:rgba(255,255,255,.72); --soft:rgba(255,255,255,.12); --border:rgba(255,255,255,.18);
+    --accent:#ff4d70; --accent-2:#c94fff; --err-color:#ff6f6f;
+  }
+  html,body{height:100%;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+  .wrap{min-height:100%; position:relative; overflow-x:hidden;}
+
+  /* Background effects */
+  .bg-grad{position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(60vw 60vw at 15% 20%, rgba(255,77,112,.12), transparent 60%),
+      radial-gradient(70vw 70vw at 85% 25%, rgba(201,79,255,.10), transparent 60%),
+      radial-gradient(80vw 80vw at 50% 90%, rgba(255,0,0,.08), transparent 60%),
+      linear-gradient(180deg, #0b0b0d 0%, #0b0b0d 100%);
+    filter: saturate(110%);
+  }
+  .spark{position:fixed;inset:0;pointer-events:none;z-index:0;background-repeat:no-repeat;animation:twinkle 3.2s linear infinite;opacity:.45}
+  .spark::before,.spark::after{content:"";position:absolute;inset:0;background-repeat:no-repeat;background-image:
+    radial-gradient(2px 2px at 10% 20%, rgba(255,255,255,.35), transparent),
+    radial-gradient(2px 2px at 32% 78%, rgba(255,255,255,.25), transparent),
+    radial-gradient(2px 2px at 76% 26%, rgba(255,255,255,.28), transparent),
+    radial-gradient(2px 2px at 88% 62%, rgba(255,255,255,.22), transparent);
+  }
+  .spark::after{filter:blur(1px);opacity:.7}
+  @keyframes twinkle{0%,100%{opacity:.25}50%{opacity:.9}}
+
+  /* Card primitives */
+  .card{background:color-mix(in oklab, var(--fg) 6%, transparent);border:1px solid var(--border);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 10px 30px rgba(0,0,0,.28);border-radius:22px}
+
+  /* Lock screen */
+  .gate{position:relative;z-index:1;min-height:100svh;display:grid;place-items:center;padding:28px; transition: opacity .4s ease, visibility .4s ease;}
+  .gate.hidden{opacity:0; visibility:hidden; pointer-events:none;}
+
+  .logo-heart{font-size:52px;animation:beat 1.4s ease-in-out infinite}
+  @keyframes beat{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}
+  .gate .box{width:min(520px,92vw)}
+  .row{display:flex;gap:10px;margin-top:14px}
+  .input{flex:1;padding:14px 16px;border-radius:16px;border:1px solid var(--border);outline:0;background:color-mix(in oklab, var(--fg) 8%, transparent);color:var(--fg);font-size:16px;transition:border-color .3s ease;}
+  .btn{cursor:pointer;border:1px solid var(--border);background:#ffffff; color:#000; padding:12px 16px;border-radius:16px;font-weight:600}
+  .btn:hover{filter:brightness(1.04)}
+  .hint{margin-top:10px;color:rgba(255,255,255,.5);font-size:12px;text-align:center}
+  .err{color:var(--err-color);font-size:13px;margin-top:6px;min-height:18px}
+
+  /* --- Change 1: Added shake animation and error style for password --- */
+  .input.error { border-color: var(--err-color); }
+  .shake { animation: shake 0.5s ease-in-out; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); } 20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); } 60% { transform: translateX(-6px); }
+    80% { transform: translateX(6px); }
+  }
+
+  /* Main */
+  .main{position:relative;z-index:1; opacity:0; visibility:hidden; transition: opacity .6s .2s ease, visibility .6s .2s ease;}
+  .main.visible{opacity:1; visibility:visible;}
+  .center{display:flex;flex-direction:column;align-items:center;text-align:center;padding:24px 18px 6px}
+  .chips{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;justify-content:center}
+  .chip{padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:color-mix(in oklab, var(--fg) 7%, transparent);font-size:12px;color:rgba(255,255,255,.8); transition: background .2s ease;}
+  .chip:hover{background:color-mix(in oklab, var(--fg) 12%, transparent)}
+
+  /* Typing headline */
+  .type{display:inline-block; max-width:100%; white-space:nowrap; overflow:hidden; border-right:.12em solid rgba(255,255,255,.6);
+    animation:typing 4s steps(38,end), caret .9s step-end infinite}
+  @keyframes typing{from{width:0}to{width:38ch}}
+  @keyframes caret{from,to{border-color:transparent}50%{border-color:rgba(255,255,255,.6)}}
+
+  /* Scattered notes */
+  .board{position:relative; height:140svh;}
+  .note{position:absolute; width:min(280px,86vw); padding:12px 14px; border-radius:18px; border:1px solid var(--border);
+        background:color-mix(in oklab, var(--fg) 6%, transparent); box-shadow:0 8px 24px rgba(0,0,0,.25);
+        font-size:15px; color:rgba(255,255,255,.92); line-height:1.5; animation:pop .6s ease both}
+  .note small{opacity:.6; display:block; margin-top:6px}
+  @keyframes pop{from{transform:translateY(10px) scale(.98);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+
+  /* --- Change 2: Added smooth animation for modal --- */
+  .modal-wrap{position:fixed;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.65);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);z-index:20;padding:16px;
+              opacity:0; visibility:hidden; transition: opacity .3s ease, visibility .3s ease}
+  .modal-wrap.visible{opacity:1; visibility:visible;}
+  .modal{width:min(760px,96vw); transform:scale(.95); transition: transform .3s ease;}
+  .modal-wrap.visible .modal{transform:scale(1);}
+  .modal h3{margin:0 0 10px;font-size:22px}
+  .modal .body{max-height:62svh; overflow:auto; padding-right:6px}
+  .close{position:absolute; right:12px; top:12px; background:color-mix(in oklab, var(--fg) 10%, transparent); border:1px solid var(--border); color:var(--fg); padding:6px 10px; border-radius:999px; cursor:pointer}
+
+  /* Controls */
+  .secret-btn{display:inline-flex;align-items:center;gap:10px; padding:12px 16px; border-radius:18px; border:1px solid var(--border);
+              background:color-mix(in oklab, var(--fg) 8%, transparent); color:var(--fg); cursor:pointer}
+  .secret-btn:hover{background:color-mix(in oklab, var(--fg) 12%, transparent)}
+  .controls{position:absolute; left:50%; transform:translateX(-50%); bottom:28px; display:flex; gap:10px;}
+  .muted{opacity:.7}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  @media (min-width: 900px){ .board{height:120svh} }
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div class="bg-grad"></div>
+  <div class="spark"></div>
+
+  <section class="gate" id="gate" aria-labelledby="gate-title">
+    <div class="box card" style="padding:22px 20px 20px;">
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px">
+        <div class="logo-heart" aria-hidden="true">❤</div>
+        <h1 id="gate-title" style="margin:6px 0 2px;font-size:22px">Private Gate</h1>
+        <p class="muted" style="margin:0 0 10px;font-size:14px">Enter our special date to unlock</p>
+      </div>
+      <form id="gate-form" autocomplete="off" novalidate>
+        <div class="row">
+          <label for="pw" class="sr-only">Password</label>
+          <input class="input" id="pw" inputmode="numeric" placeholder="DD-MM-YYYY" maxlength="10" />
+          <button class="btn" type="submit" aria-label="Unlock">Unlock</button>
+        </div>
+        <div id="err" class="err" role="alert" aria-live="polite"></div>
+      </form>
+      <div class="hint">Hint: 25-10-2010</div>
+    </div>
+  </section>
+
+  <main class="main" id="main">
+    <section class="center">
+      <h2 class="type">Hi Mommy (Prema) ❤ This place is only for you…</h2>
+      <p class="muted" style="max-width:720px;margin:10px auto 0;font-size:14.5px">
+        If I ever do wrong, please tell me—I'll fix it instantly. I choose you, today and always.
+      </p>
+      <div class="chips" aria-hidden="true">
+        <div class="chip">PRIVATE</div>
+        <button id="music-toggle" class="chip" type="button">Play music</button>
+      </div>
+    </section>
+
+    <section class="board" aria-label="Floating love notes">
+      <div class="controls">
+        <button id="open-secret" class="secret-btn" type="button" aria-haspopup="dialog">
+          <span aria-hidden="true">❤</span> <span>Open secret letter</span>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <section id="modal-wrap" class="modal-wrap" aria-hidden="true">
+    <div class="modal card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button class="close" id="close-modal" type="button" aria-label="Close">Close</button>
+      <div style="padding:18px 18px 8px 18px">
+        <h3 id="modal-title">My Secret Letter to You</h3>
+        <div class="body" id="modal-body">
+          <p>I'm truly sorry for the pain I've caused you. I never want you to suffer—ever. If staying with me hurts, please tell me, and I will change. Your happiness matters more than my comfort. I want you to be genuinely happy—from the inside, not just on the surface.</p>
+          <p>Believe me, I don't love you for your body or your beauty—I love you for who you are. I want to give you the love and care you deserve. I want to marry you and spend my life with you, building a bond that lasts a lifetime.</p>
+          <p>Maybe my mistakes even pushed you to change things about yourself, and for that I'm sorry. Please forgive me and give me one more chance. I promise to protect you, cherish you, and keep you close—always. If I ever do wrong, tell me and I will fix it immediately. And if anything ever hurts you, please tell me too. Let's ask each other, be honest with each other, and choose each other, every day.</p>
+          <p>Trust me, Mommy—I'm really, really sorry. It won't happen again. I love you so much, and I want to marry you. Let's make our bond stronger so we can stay happy together, completely and forever. 🫂❤️</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="audio-box" hidden style="position:fixed;right:14px;bottom:14px;z-index:15" aria-hidden="true">
+    <div class="card" style="padding:8px 10px">
+      <audio id="audio" preload="none" controls>
+        <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_6c2e9607ab.mp3?filename=emotional-piano-112199.mp3" type="audio/mpeg" />
+        Your browser does not support the audio element.
+      </audio>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const PASSWORD = "25-10-2010";
+  const $ = (sel) => document.querySelector(sel);
+
+  // Elements
+  const gate = $("#gate"), form = $("#gate-form"), pw = $("#pw"), err = $("#err");
+  const main = $("#main"), board = $(".board");
+  const openSecret = $("#open-secret"), modalWrap = $("#modal-wrap"), closeModal = $("#close-modal");
+  const musicToggle = $("#music-toggle"), audioBox = $("#audio-box"), audio = $("#audio");
+
+  const notes = [
+    "Sorry, really sorry. It will never happen again.",
+    "Please forgive me. Don't leave me or give up on me. I can't live without you.",
+    "You're not just my bestie—you are my partner.",
+    "I'm sorry for hurting you. If my behavior ever feels wrong, please tell me and I'll fix it. I don't want you to be hurt or to suffer. You deserve the love I exist to give, and I promise to hold you close—always. Please don't hide your pain.",
+    "I don't care what anyone says. You and I are enough. If I ever have doubts, I'll ask you. If you have doubts, please ask me. With strong bonding, we need no one else.",
+    "Please don't belong to anyone else. Be mine till the end of life—and even after.",
+    "I don't want you in pain. Please forgive me. From now on I'll try my very best to keep you happy. Please give me one more chance. I'm sorry.",
+    "🫂🫂🫂🖤🖤",
+    "Even when you were hurt, you stayed with me. I will never leave you alone or let you suffer. You are entirely mine."
+  ];
+  const positions = [ [8,6], [20,62], [33,14], [46,66], [59,6], [70,56], [80,22], [12,78], [87,62] ];
+
+  function escapeHTML(s){
+    return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+  }
+
+  function placeNotes(){
+    const controls = board.querySelector('.controls'); // Save controls before clearing
+    board.innerHTML = ''; // Clear previous notes
+    notes.forEach((text, i) => {
+      const n = document.createElement('article');
+      n.className = 'note card';
+      n.style.cssText = `top:${positions[i%positions.length][0]}%; left:${positions[i%positions.length][1]}%; animation-delay:${120*i}ms`;
+      n.setAttribute('role','note');
+      n.innerHTML = `<div style="position:absolute;left:-10px;top:-10px;width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--soft);display:grid;place-items:center;font-size:12px;transform:rotate(-12deg);">✦</div><div>${escapeHTML(text)}</div><small>— Yours, always</small>`;
+      board.appendChild(n);
+    });
+    if (controls) board.appendChild(controls); // Re-append controls
+  }
+
+  // Unlock logic
+  form.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    if (pw.value.trim() === PASSWORD) {
+      gate.classList.add('hidden');
+      main.classList.add('visible');
+      err.textContent = '';
+      if(document.activeElement) document.activeElement.blur();
+      placeNotes();
+      setTimeout(() => $("#open-secret").focus(), 600);
+    } else {
+      err.textContent = 'Wrong password. Try the special date ✨';
+      pw.classList.add('error', 'shake');
+      pw.focus();
+      setTimeout(() => pw.classList.remove('shake'), 500);
+    }
+  });
+  
+  // --- Change 3: Function to automatically format date input ---
+  function formatDate(e) {
+    let input = e.target.value.replace(/\D/g, ''); // Remove non-digits
+    if (input.length > 2) input = input.substring(0,2) + '-' + input.substring(2);
+    if (input.length > 5) input = input.substring(0,5) + '-' + input.substring(5,9);
+    e.target.value = input;
+  }
+
+  pw.addEventListener('input', (e)=>{
+    formatDate(e);
+    err.textContent = '';
+    pw.classList.remove('error');
+  });
+
+  // --- Change 4: Improved Modal controls with animations and focus lock ---
+  function openModal(){
+    main.inert = true; // Make background content unfocusable
+    document.body.style.overflow = 'hidden';
+    modalWrap.classList.add('visible');
+    modalWrap.setAttribute('aria-hidden', 'false');
+    document.addEventListener('keydown', escClose);
+    setTimeout(() => closeModal.focus(), 50);
+  }
+  function close(){
+    main.inert = false;
+    document.body.style.overflow = '';
+    modalWrap.classList.remove('visible');
+    modalWrap.setAttribute('aria-hidden', 'true');
+    document.removeEventListener('keydown', escClose);
+    openSecret.focus();
+  }
+  function escClose(ev){ if(ev.key === 'Escape') close(); }
+  openSecret.addEventListener('click', openModal);
+  closeModal.addEventListener('click', close);
+  modalWrap.addEventListener('click', (e)=>{ if(e.target === modalWrap) close(); });
+
+  // Music toggle
+  let musicVisible = false;
+  musicToggle.addEventListener('click', async ()=>{
+    musicVisible = !musicVisible;
+    audioBox.hidden = !musicVisible;
+    musicToggle.textContent = musicVisible ? 'Hide music' : 'Play music';
+    musicToggle.style.background = musicVisible ? 'var(--accent)' : '';
+    musicToggle.style.color = musicVisible ? 'var(--fg)' : '';
+    try{
+      if(musicVisible){ await audio.play(); } else { audio.pause(); }
+    }catch(_){ /* browsers may block autoplay */ }
+  });
+
+})();
+</script>
+</body>
+</html>
